@@ -3,6 +3,7 @@ import {
   buildExplorerUrl,
   formatErrorMessage,
   HORIZON_TESTNET_URL,
+  inspectSignedTransaction,
   shortenAddress,
   submitSignedTransaction,
   validateStellarPublicKey,
@@ -66,6 +67,34 @@ describe("stellar helpers", () => {
     ).toBe(
       "Recipient account is not active on Stellar Testnet. Fund the recipient account first, then try again.",
     );
+  });
+
+  it("formats bad auth transaction failures clearly", () => {
+    expect(
+      formatErrorMessage({
+        response: {
+          data: {
+            extras: {
+              result_codes: {
+                transaction: "tx_bad_auth",
+              },
+            },
+          },
+        },
+      }),
+    ).toBe(
+      "Transaction was not signed by the connected source wallet. Reconnect Freighter, make sure the connected account is active, and try again.",
+    );
+  });
+
+  it("can inspect a signed transaction envelope", () => {
+    const signedXdr =
+      "AAAAAgAAAABXYr5+lOmwhAKIKZYGjlS9OUIpRLY5qLkdz08N2PX3xQAAAGQAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAABqQYKTAAAAAAAAAAEAAAAAAAAAAQAAAABg1H45/FJlH5dHriq0aMuLCk661uZFW75kwC3+gCK8SAAAAAAAAAAAAJiWgAAAAAAAAAAB2PX3xQAAAEC2WjPxRu6KEJ+E3LSvWHE73cA93MCvxMXyBiRqsS9hONbzwuM85vvhQNUCnOjVRsoeMVi/Dc4WYLqR6/HUkVcL";
+
+    expect(inspectSignedTransaction(signedXdr)).toEqual({
+      signatureCount: 1,
+      source: "GBLWFPT6STU3BBACRAUZMBUOKS6TSQRJIS3DTKFZDXHU6DOY6X34LVHJ",
+    });
   });
 
   it("submits signed transactions as Horizon form data", async () => {

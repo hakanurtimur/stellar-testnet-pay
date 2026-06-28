@@ -17,6 +17,11 @@ export type BalanceResult =
   | { status: "funded"; balance: string }
   | { status: "unfunded"; balance: null };
 
+export type SignedTransactionInfo = {
+  signatureCount: number;
+  source: string;
+};
+
 export function shortenAddress(address: string, front = 6, back = 5) {
   if (address.length <= front + back + 3) {
     return address;
@@ -38,6 +43,12 @@ export function buildExplorerUrl(hash: string) {
 }
 
 function formatHorizonResultCodes(resultCodes: unknown) {
+  const transaction =
+    typeof resultCodes === "object" &&
+    resultCodes !== null &&
+    "transaction" in resultCodes
+      ? (resultCodes as { transaction?: string }).transaction
+      : undefined;
   const operations =
     typeof resultCodes === "object" &&
     resultCodes !== null &&
@@ -45,6 +56,10 @@ function formatHorizonResultCodes(resultCodes: unknown) {
     Array.isArray((resultCodes as { operations?: unknown }).operations)
       ? (resultCodes as { operations: string[] }).operations
       : [];
+
+  if (transaction === "tx_bad_auth") {
+    return "Transaction was not signed by the connected source wallet. Reconnect Freighter, make sure the connected account is active, and try again.";
+  }
 
   if (operations.includes("op_no_destination")) {
     return "Recipient account is not active on Stellar Testnet. Fund the recipient account first, then try again.";
@@ -159,6 +174,21 @@ export async function buildPaymentTransaction({
     .addMemo(Memo.text("Stellar Testnet Pay"))
     .setTimeout(180)
     .build();
+}
+
+export function inspectSignedTransaction(
+  signedXdr: string,
+): SignedTransactionInfo {
+  const transaction = TransactionBuilder.fromXDR(signedXdr, Networks.TESTNET);
+
+  if (!("source" in transaction)) {
+    throw new Error("Fee bump transactions are not supported by this app.");
+  }
+
+  return {
+    signatureCount: transaction.signatures.length,
+    source: transaction.source,
+  };
 }
 
 export async function submitSignedTransaction(signedXdr: string) {

@@ -14,6 +14,7 @@ import {
   buildPaymentTransaction,
   fetchXlmBalance,
   formatErrorMessage,
+  inspectSignedTransaction,
   shortenAddress,
   submitSignedTransaction,
   validateStellarPublicKey,
@@ -23,6 +24,10 @@ import {
 type TransactionResult =
   | { status: "success"; hash: string }
   | { status: "error"; message: string };
+
+type FreighterSignOptions = Parameters<typeof signTransaction>[1] & {
+  accountToSign?: string;
+};
 
 export default function Home() {
   const [freighterInstalled, setFreighterInstalled] = useState<boolean | null>(
@@ -182,12 +187,25 @@ export default function Home() {
 
       const signed = await signTransaction(transaction.toXDR(), {
         networkPassphrase: Networks.TESTNET,
-        address: publicKey,
-      });
+        accountToSign: publicKey,
+      } as FreighterSignOptions);
 
       if (signed.error || !signed.signedTxXdr) {
         throw new Error(
           signed.error?.message || "Transaction Freighter ile imzalanamadı.",
+        );
+      }
+
+      if (signed.signerAddress && signed.signerAddress !== publicKey) {
+        throw new Error(
+          "Freighter farklı bir account ile imzaladı. Wallet bağlantısını kesip doğru hesapla tekrar bağlanın.",
+        );
+      }
+
+      const signedInfo = inspectSignedTransaction(signed.signedTxXdr);
+      if (signedInfo.source !== publicKey || signedInfo.signatureCount === 0) {
+        throw new Error(
+          "Transaction connected wallet tarafından imzalanmadı. Freighter hesabını kontrol edip tekrar deneyin.",
         );
       }
 
