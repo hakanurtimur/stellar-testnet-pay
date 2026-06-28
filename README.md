@@ -1,6 +1,8 @@
 # Stellar Testnet Pay
 
-Stellar Testnet Pay is a simple one-page dApp for the Level 1 White Belt Stellar dApp submission. It connects to Freighter, reads a Stellar Testnet XLM balance, and sends native XLM payments on testnet only.
+Live Demo: https://stellar-testnet-pay.vercel.app/
+
+A simple Stellar Testnet dApp built for Level 1 White Belt. Users can connect Freighter wallet, view XLM balance, and send XLM on Stellar Testnet.
 
 ## Features
 
@@ -22,10 +24,6 @@ Stellar Testnet Pay is a simple one-page dApp for the Level 1 White Belt Stellar
 - `@stellar/stellar-sdk`
 - Stellar Testnet Horizon
 - Vercel-compatible project structure
-
-## Live Demo
-
-Live demo: Add the Vercel deployment URL here after deploy.
 
 ## Setup Instructions
 
@@ -99,7 +97,7 @@ Bu hesap testnet üzerinde henüz fund edilmemiş olabilir.
 - [x] Stellar Expert testnet explorer link
 - [x] Vercel-compatible build
 
-## Screenshot Placeholders
+## Screenshots
 
 ![Wallet Connected](./screenshots/wallet-connected.png)
 ![Balance Displayed](./screenshots/balance-displayed.png)
