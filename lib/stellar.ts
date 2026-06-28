@@ -162,8 +162,18 @@ export async function buildPaymentTransaction({
 }
 
 export async function submitSignedTransaction(signedXdr: string) {
-  const server = new Horizon.Server(HORIZON_TESTNET_URL);
-  const transaction = TransactionBuilder.fromXDR(signedXdr, Networks.TESTNET);
+  const response = await fetch(`${HORIZON_TESTNET_URL}/transactions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({ tx: signedXdr }),
+  });
+  const data = await response.json();
 
-  return server.submitTransaction(transaction);
+  if (!response.ok) {
+    throw { response: { data, status: response.status } };
+  }
+
+  return data;
 }

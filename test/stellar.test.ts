@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildExplorerUrl,
   formatErrorMessage,
+  HORIZON_TESTNET_URL,
   shortenAddress,
+  submitSignedTransaction,
   validateStellarPublicKey,
 } from "../lib/stellar";
 
@@ -10,6 +12,10 @@ const validPublicKey =
   "GAI7S3HC3FW4EI4CMG5J7TECQGYP4QMAW5OUEVD4VA7WHOA5P5HEM36O";
 
 describe("stellar helpers", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("shortens long Stellar addresses", () => {
     expect(shortenAddress(validPublicKey)).toBe("GAI7S3...EM36O");
   });
@@ -60,5 +66,24 @@ describe("stellar helpers", () => {
     ).toBe(
       "Recipient account is not active on Stellar Testnet. Fund the recipient account first, then try again.",
     );
+  });
+
+  it("submits signed transactions as Horizon form data", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ hash: "tx-hash" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await submitSignedTransaction("signed-xdr");
+
+    expect(response.hash).toBe("tx-hash");
+    expect(fetchMock).toHaveBeenCalledWith(`${HORIZON_TESTNET_URL}/transactions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({ tx: "signed-xdr" }),
+    });
   });
 });
