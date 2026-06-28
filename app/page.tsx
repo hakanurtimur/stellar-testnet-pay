@@ -181,6 +181,10 @@ export default function Home() {
       return "Recipient geçerli bir Stellar public key değil.";
     }
 
+    if (recipient.trim() === publicKey) {
+      return "Recipient bağlı wallet ile aynı. Kendi hesabına gönderirsen sadece 0.00001 XLM fee düşer; farklı bir testnet adresi gir.";
+    }
+
     const numericAmount = Number(amount);
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
       return "Amount pozitif bir sayı olmalı.";
@@ -443,7 +447,35 @@ export default function Home() {
                 type="number"
                 value={amount}
               />
+              <span className="mt-2 block text-xs leading-5 text-slate-500">
+                Freighter&apos;da görünen 0.00001 XLM network fee&apos;dir.
+                Gönderilecek payment amount burada yazdığın değerdir.
+              </span>
             </label>
+
+            {connected && recipient.trim() && amount ? (
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                <p className="font-semibold text-slate-950">Payment summary</p>
+                <p className="mt-1">
+                  Source:{" "}
+                  <span className="font-mono">{shortenAddress(publicKey)}</span>
+                </p>
+                <p>
+                  Recipient:{" "}
+                  <span className="font-mono">
+                    {shortenAddress(recipient.trim())}
+                  </span>
+                </p>
+                <p>
+                  Amount:{" "}
+                  <span className="font-semibold">
+                    {Number.isFinite(Number(amount))
+                      ? `${Number(amount).toFixed(7)} XLM`
+                      : amount}
+                  </span>
+                </p>
+              </div>
+            ) : null}
 
             {formError ? (
               <p className="rounded-md bg-rose-50 p-3 text-sm text-rose-800">
