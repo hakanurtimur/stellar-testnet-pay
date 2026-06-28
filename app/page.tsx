@@ -29,6 +29,8 @@ type FreighterSignOptions = Parameters<typeof signTransaction>[1] & {
   accountToSign?: string;
 };
 
+const DISCONNECT_FLAG = "stellar-testnet-pay-disconnected";
+
 export default function Home() {
   const [freighterInstalled, setFreighterInstalled] = useState<boolean | null>(
     null,
@@ -71,6 +73,13 @@ export default function Home() {
         return;
       }
 
+      if (window.sessionStorage.getItem(DISCONNECT_FLAG) === "true") {
+        setWalletMessage(
+          "Wallet app bağlantısı kesildi. Başka hesap bağlamak için Freighter'da hesabı değiştirip Connect Wallet'a basın.",
+        );
+        return;
+      }
+
       const currentAddress = await getAddress();
       if (currentAddress.address) {
         setPublicKey(currentAddress.address);
@@ -108,6 +117,7 @@ export default function Home() {
     setConnecting(true);
     setWalletMessage("");
     setTransactionResult(null);
+    window.sessionStorage.removeItem(DISCONNECT_FLAG);
 
     try {
       const connection = await isConnected();
@@ -135,12 +145,15 @@ export default function Home() {
   }
 
   function disconnectWallet() {
+    window.sessionStorage.setItem(DISCONNECT_FLAG, "true");
     setPublicKey("");
     setBalance(null);
     setRecipient("");
     setAmount("");
     setFormError("");
-    setWalletMessage("");
+    setWalletMessage(
+      "Wallet app bağlantısı kesildi. Freighter eklentisinde istediğiniz hesabı seçip Connect Wallet'a tekrar basın.",
+    );
     setTransactionResult(null);
     setCopyLabel("Copy address");
   }
@@ -292,7 +305,7 @@ export default function Home() {
                 onClick={disconnectWallet}
                 type="button"
               >
-                Disconnect
+                Disconnect app
               </button>
             )}
             {connected ? (
@@ -309,6 +322,13 @@ export default function Home() {
           {walletMessage ? (
             <p className="mt-4 rounded-md bg-rose-50 p-3 text-sm text-rose-800">
               {walletMessage}
+            </p>
+          ) : null}
+
+          {!connected && freighterInstalled ? (
+            <p className="mt-4 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+              Başka cüzdan bağlamak için Freighter eklentisinde hesabı değiştir,
+              sonra Connect Wallet&apos;a bas.
             </p>
           ) : null}
 
