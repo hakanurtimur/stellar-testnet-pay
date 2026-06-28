@@ -62,7 +62,7 @@ function formatHorizonResultCodes(resultCodes: unknown) {
   }
 
   if (operations.includes("op_no_destination")) {
-    return "Recipient account is not active on Stellar Testnet. Fund the recipient account first, then try again.";
+    return "Recipient account Stellar Testnet üzerinde aktif/fund edilmiş değil. Bu durumda payment fail olur ve sadece 0.00001 XLM fee kesilir. Önce recipient hesabı testnet friendbot ile fund et.";
   }
 
   if (operations.includes("op_underfunded")) {

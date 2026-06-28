@@ -65,7 +65,7 @@ describe("stellar helpers", () => {
         },
       }),
     ).toBe(
-      "Recipient account is not active on Stellar Testnet. Fund the recipient account first, then try again.",
+      "Recipient account Stellar Testnet üzerinde aktif/fund edilmiş değil. Bu durumda payment fail olur ve sadece 0.00001 XLM fee kesilir. Önce recipient hesabı testnet friendbot ile fund et.",
     );
   });
 

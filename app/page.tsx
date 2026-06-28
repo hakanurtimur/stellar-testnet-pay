@@ -214,6 +214,13 @@ export default function Home() {
         throw new Error("Freighter network ayarını Stellar Testnet olarak seçin.");
       }
 
+      const recipientBalance = await fetchXlmBalance(recipient.trim());
+      if (recipientBalance.status === "unfunded") {
+        throw new Error(
+          "Recipient account Stellar Testnet üzerinde aktif/fund edilmiş değil. Payment gönderirsen işlem fail olur ve sadece 0.00001 XLM fee kesilir. Önce recipient hesabı testnet friendbot ile fund et veya aktif bir testnet adresi gir.",
+        );
+      }
+
       const transaction = await buildPaymentTransaction({
         sourcePublicKey: publicKey,
         recipient: recipient.trim(),
