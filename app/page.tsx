@@ -86,6 +86,24 @@ export default function Home() {
     [publicKey],
   );
 
+  async function refreshWalletAddress() {
+    setWalletMessage("");
+
+    try {
+      const currentAddress = await getAddress();
+      if (currentAddress.error || !currentAddress.address) {
+        throw new Error(
+          currentAddress.error?.message || "Freighter wallet adresi okunamadı.",
+        );
+      }
+
+      setPublicKey(currentAddress.address);
+      await loadBalance(currentAddress.address);
+    } catch (error) {
+      setWalletMessage(formatErrorMessage(error));
+    }
+  }
+
   async function connectWallet() {
     setConnecting(true);
     setWalletMessage("");
@@ -277,6 +295,15 @@ export default function Home() {
                 Disconnect
               </button>
             )}
+            {connected ? (
+              <button
+                className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-100"
+                onClick={() => void refreshWalletAddress()}
+                type="button"
+              >
+                Refresh wallet
+              </button>
+            ) : null}
           </div>
 
           {walletMessage ? (
@@ -286,21 +313,36 @@ export default function Home() {
           ) : null}
 
           {connected ? (
-            <div className="mt-5 rounded-lg bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Connected public key
-              </p>
-              <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <code className="break-all text-sm font-semibold text-slate-950">
+            <div className="mt-5 space-y-3 rounded-lg bg-slate-50 p-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Connected wallet
+                </p>
+                <p className="mt-1 text-lg font-semibold text-slate-950">
                   {shortPublicKey}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Full public key
+                </p>
+                <code className="mt-1 block break-all rounded-md border border-slate-200 bg-white p-3 text-xs font-semibold leading-5 text-slate-950 sm:text-sm">
+                  {publicKey}
                 </code>
-                <button
-                  className="w-fit rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-                  onClick={copyAddress}
-                  type="button"
-                >
-                  {copyLabel}
-                </button>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-slate-600">
+                  Payments are signed by this source account.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className="w-fit rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                    onClick={copyAddress}
+                    type="button"
+                  >
+                    {copyLabel}
+                  </button>
+                </div>
               </div>
             </div>
           ) : null}
